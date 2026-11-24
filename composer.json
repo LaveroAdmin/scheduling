@@ -1,0 +1,39 @@
+{
+    "name": "laveroadmin/scheduling",
+    "description": "Task scheduling extension for LaveroAdmin",
+    "type": "library",
+    "keywords": [
+        "lavero-admin",
+        "task",
+        "Scheduling"
+    ],
+    "homepage": "https://bespredel.name",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Aleksandr Kireev",
+            "email": "hello@bespredel.name",
+            "homepage": "https://bespredel.name"
+        }
+    ],
+    "require": {
+        "php": ">=7.3",
+        "laveroadmin/laveroadmin": "^1.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "~6.0|^7.0|^8.0|^9.0|^10.0",
+        "laravel/laravel": ">=8.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "LaveroAdmin\\Admin\\Scheduling\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "LaveroAdmin\\Admin\\Scheduling\\SchedulingServiceProvider"
+            ]
+        }
+    }
+}

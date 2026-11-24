@@ -1,0 +1,64 @@
+{
+    "name": "laveroadmin/scheduling",
+    "title": {
+        "en": "Task Scheduling",
+        "ru": "Планировщик задач"
+    },
+    "description": {
+        "en": "Manage Laravel scheduled tasks, trigger manual runs, and inspect crontab execution history.",
+        "ru": "Управление расписанием cron-задач Laravel, ручной запуск и просмотр истории выполнения."
+    },
+    "category": "tools",
+    "icon": "icon-clock",
+    "version": "1.0.0",
+    "author": {
+        "name": "Aleksandr Kireev",
+        "email": "hello@bespredel.name",
+        "url": "https://bespredel.name"
+    },
+    "github": "https://github.com/LaveroAdmin/scheduling",
+    "setup": {
+        "commands": [
+            {
+                "cmd": "php artisan admin:import scheduling",
+                "desc": {
+                    "en": "Import task scheduling menu item and permissions",
+                    "ru": "Импорт меню и прав доступа"
+                }
+            }
+        ],
+        "config": {
+            "file": "config/admin.php",
+            "code": "'scheduling' => [\n    'enable' => true,\n],"
+        },
+        "requirements": {
+            "en": [
+                "PHP >= 8.1",
+                "System cron scheduler running on server"
+            ],
+            "ru": [
+                "PHP >= 8.1",
+                "Настроенный cron на сервере"
+            ]
+        },
+        "notes": {
+            "en": [
+                "Add the Laravel scheduler call to your server crontab:",
+                "* * * * * cd /path-to-your-project && php artisan schedule:run >> /dev/null 2>&1"
+            ],
+            "ru": [
+                "Добавьте вызов планировщика в системный crontab сервера:",
+                "* * * * * cd /path-to-your-project && php artisan schedule:run >> /dev/null 2>&1"
+            ]
+        }
+    },
+    "key": "scheduling",
+    "compatibility": {
+        "php": ">=8.1",
+        "laravel": "^10.0 || ^11.0 || ^12.0 || ^13.0",
+        "admin": "^1.0",
+        "extensions": [
+            "pdo"
+        ]
+    }
+}
