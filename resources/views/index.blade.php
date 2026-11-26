@@ -21,17 +21,38 @@
                 <th>{{ trans('lavero-admin-scheduling::scheduling.task') }}</th>
                 <th>{{ trans('lavero-admin-scheduling::scheduling.run_at') }}</th>
                 <th>{{ trans('lavero-admin-scheduling::scheduling.next_run_time') }}</th>
+                <th>Last Run</th>
                 <th>{{ trans('lavero-admin-scheduling::scheduling.description') }}</th>
+                <th>Status</th>
                 <th>{{ trans('lavero-admin-scheduling::scheduling.run') }}</th>
             </tr>
             @foreach($events as $index => $event)
+            @php
+                $taskId = $index + 1;
+                $taskName = $event['task']['name'] ?? '';
+                $runInfo = $history[$taskId] ?? null;
+                $isDisabled = in_array($taskName, $disabled ?? [], true);
+            @endphp
             <tr>
-                <td>{{ $index+1 }}.</td>
-                <td><code>{{ $event['task']['name'] }}</code></td>
+                <td>{{ $taskId }}.</td>
+                <td><code>{{ $taskName }}</code></td>
                 <td><span class="label label-success">{{ $event['expression'] }}</span>&nbsp;{{ $event['readable'] }}</td>
                 <td>{{ $event['nextRunDate'] }}</td>
+                <td class="small">
+                    @if($runInfo)
+                        <span class="badge bg-{{ ($runInfo['status'] ?? '') === 'success' ? 'success' : 'danger' }}">{{ $runInfo['status'] }}</span>
+                        <span class="text-muted">{{ $runInfo['last_run_at'] }} ({{ $runInfo['duration_ms'] }}ms)</span>
+                    @else
+                        <span class="text-muted">—</span>
+                    @endif
+                </td>
                 <td>{{ $event['description'] }}</td>
-                <td><a class="btn btn-xs btn-primary run-task" data-id="{{ $index+1 }}">{{ trans('lavero-admin-scheduling::scheduling.run') }}</a></td>
+                <td>
+                    <button type="button" class="btn btn-xs {{ $isDisabled ? 'btn-outline-secondary' : 'btn-outline-success' }} toggle-task" data-task="{{ $taskName }}">
+                        {{ $isDisabled ? 'Disabled' : 'Active' }}
+                    </button>
+                </td>
+                <td><a class="btn btn-xs btn-primary run-task" data-id="{{ $taskId }}">{{ trans('lavero-admin-scheduling::scheduling.run') }}</a></td>
             </tr>
             @endforeach
             </tbody>
@@ -62,10 +83,20 @@
                 var data = {id:id};
 
                 admin.ajax.post(url,data,function (result) {
-                    console.log(data);
-                    if (typeof data === 'object') {
+                    if (result && result.data) {
                         document.querySelector('.output-box').classList.remove('d-none');
-                        document.querySelector('.output-box .output-body').innerHTML = result.data.data;
+                        document.querySelector('.output-box .output-body').innerHTML = result.data.data || '';
+                    }
+                });
+            });
+        });
+
+        document.querySelectorAll('.toggle-task').forEach(el => {
+            el.addEventListener('click', function () {
+                var task = this.dataset.task;
+                admin.ajax.post('{{ route("scheduling-toggle") }}', { task: task }, function (res) {
+                    if (res && res.data && res.data.status) {
+                        admin.ajax.reload();
                     }
                 });
             });

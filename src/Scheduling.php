@@ -168,6 +168,7 @@ class Scheduling extends Extension
             /* @var \Illuminate\Routing\Router $router */
             $router->get('scheduling', 'LaveroAdmin\Admin\Scheduling\SchedulingController@index')->name('scheduling-index');
             $router->post('scheduling/run', 'LaveroAdmin\Admin\Scheduling\SchedulingController@runEvent')->name('scheduling-run');
+            $router->post('scheduling/toggle', 'LaveroAdmin\Admin\Scheduling\SchedulingController@toggle')->name('scheduling-toggle');
         });
     }
 

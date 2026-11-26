@@ -21,7 +21,9 @@ class SchedulingController
             $scheduling = new Scheduling();
 
             $content->body(view('lavero-admin-scheduling::index', [
-                'events' => $scheduling->getTasks(),
+                'events'   => $scheduling->getTasks(),
+                'history'  => \Illuminate\Support\Facades\Cache::get('lavero_scheduling_history', []),
+                'disabled' => \Illuminate\Support\Facades\Cache::get('lavero_scheduling_disabled', []),
             ]));
         });
     }
@@ -34,21 +36,68 @@ class SchedulingController
     public function runEvent(Request $request)
     {
         $scheduling = new Scheduling();
+        $id = $request->get('id');
+        $startedAt = microtime(true);
 
         try {
-            $output = $scheduling->runTask($request->get('id'));
+            $output = $scheduling->runTask($id);
+            $durationMs = (int) round((microtime(true) - $startedAt) * 1000);
+            $history = \Illuminate\Support\Facades\Cache::get('lavero_scheduling_history', []);
+            $history[$id] = [
+                'last_run_at' => now()->toDateTimeString(),
+                'duration_ms' => $durationMs,
+                'status'      => 'success',
+            ];
+            \Illuminate\Support\Facades\Cache::forever('lavero_scheduling_history', $history);
 
             return [
                 'status'    => true,
                 'message'   => 'success',
                 'data'      => $output,
+                'duration'  => $durationMs,
             ];
         } catch (\Exception $e) {
+            $history = \Illuminate\Support\Facades\Cache::get('lavero_scheduling_history', []);
+            $history[$id] = [
+                'last_run_at' => now()->toDateTimeString(),
+                'duration_ms' => (int) round((microtime(true) - $startedAt) * 1000),
+                'status'      => 'failed',
+            ];
+            \Illuminate\Support\Facades\Cache::forever('lavero_scheduling_history', $history);
+
             return [
                 'status'    => false,
                 'message'   => 'failed',
                 'data'      => $e->getMessage(),
             ];
         }
+    }
+
+    public function toggle(Request $request)
+    {
+        $task = (string) $request->input('task');
+        if ($task === '') {
+            return ['status' => false, 'message' => 'Task identifier is required'];
+        }
+
+        $disabled = \Illuminate\Support\Facades\Cache::get('lavero_scheduling_disabled', []);
+        if (!is_array($disabled)) {
+            $disabled = [];
+        }
+
+        if (in_array($task, $disabled, true)) {
+            $disabled = array_values(array_diff($disabled, [$task]));
+            $isDisabled = false;
+        } else {
+            $disabled[] = $task;
+            $isDisabled = true;
+        }
+
+        \Illuminate\Support\Facades\Cache::forever('lavero_scheduling_disabled', $disabled);
+
+        return [
+            'status'   => true,
+            'disabled' => $isDisabled,
+        ];
     }
 }
